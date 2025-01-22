@@ -134,7 +134,7 @@ class EmacsPlusAT27 < EmacsBase
       system "./configure", *args
 
       # Disable aligned_alloc on Mojave. See issue: https://github.com/daviderestivo/homebrew-emacs-head/issues/15
-      if MacOS.version <= :mojave
+      if OS.mac? && MacOS.version <= :mojave
         ohai "Force disabling of aligned_alloc on macOS <= Mojave"
         configure_h_filtered = File.read("src/config.h")
                                    .gsub("#define HAVE_ALIGNED_ALLOC 1", "#undef HAVE_ALIGNED_ALLOC")
@@ -183,7 +183,7 @@ class EmacsPlusAT27 < EmacsBase
       system "./configure", *args
 
       # Disable aligned_alloc on Mojave. See issue: https://github.com/daviderestivo/homebrew-emacs-head/issues/15
-      if MacOS.version <= :mojave
+      if OS.mac? && MacOS.version <= :mojave
         ohai "Force disabling of aligned_alloc on macOS <= Mojave"
         configure_h_filtered = File.read("src/config.h")
                                    .gsub("#define HAVE_ALIGNED_ALLOC 1", "#undef HAVE_ALIGNED_ALLOC")
@@ -213,7 +213,7 @@ class EmacsPlusAT27 < EmacsBase
         #{prefix}
 
       To link the application to default Homebrew App location:
-        osascript -e 'tell application "Finder" to make alias file to posix file "#{prefix}/Emacs.app" at POSIX file "/Applications" with properties {name:"Emacs.app"}'
+        osascript -e 'tell application "Finder" to make alias file to posix file "#{prefix}/Emacs.app" at posix file "/Applications" with properties {name:"Emacs.app"}'
 
       If you wish to install Emacs 26 or Emacs 28, use emacs-plus@26 or
       emacs-plus@28 formula respectively.

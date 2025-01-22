@@ -2,10 +2,20 @@ require_relative "../Library/EmacsBase"
 
 class EmacsPlusAT30 < EmacsBase
   init 30
-  version "30.0.91"
+  url "https://alpha.gnu.org/gnu/emacs/pretest/emacs-30.0.93.tar.xz"
+  mirror "https://ftpmirror.gnu.org/emacs/emacs-30.0.93.tar.xz"
+  sha256 "4e50387505e1e05e83a39672e756ae1b76a24a8c981e7f981aec6e966cd6ff7f"
 
   desc "GNU Emacs text editor"
   homepage "https://www.gnu.org/software/emacs/"
+
+  head do
+    if ENV['HOMEBREW_EMACS_PLUS_30_REVISION']
+      url "https://github.com/emacs-mirror/emacs.git", :revision => ENV['HOMEBREW_EMACS_PLUS_30_REVISION']
+    else
+      url "https://github.com/emacs-mirror/emacs.git", :branch => "emacs-30"
+    end
+  end
 
   #
   # Options
@@ -22,7 +32,6 @@ class EmacsPlusAT30 < EmacsBase
   option "with-no-frame-refocus", "Disables frame re-focus (ie. closing one frame does not refocus another one)"
   option "with-native-comp", "Build with native compilation"
   option "with-compress-install", "Build with compressed install optimization"
-  option "with-poll", "Experimental: use poll() instead of select() to support > 1024 file descriptors`"
 
   #
   # Dependencies
@@ -38,7 +47,8 @@ class EmacsPlusAT30 < EmacsBase
   depends_on "pkg-config" => :build
   depends_on "texinfo" => :build
   depends_on "xz" => :build
-  depends_on "m4" => :build 
+  depends_on "m4" => :build
+  depends_on "sqlite" => :build
   depends_on "gnutls"
   depends_on "librsvg"
   depends_on "little-cms2"
@@ -56,8 +66,10 @@ class EmacsPlusAT30 < EmacsBase
   end
 
   if build.with? "native-comp"
-    depends_on "libgccjit" => :recommended
-    depends_on "gcc" => :build
+    # `libgccjit` and `gcc` are required when Emacs compiles `*.elc` files asynchronously (JIT)
+    depends_on "libgccjit"
+    depends_on "gcc"
+
     depends_on "gmp" => :build
     depends_on "libjpeg" => :build
     depends_on "zlib" => :build
@@ -79,8 +91,6 @@ class EmacsPlusAT30 < EmacsBase
 
   if ENV['HOMEBREW_EMACS_PLUS_30_REVISION']
     url "https://github.com/emacs-mirror/emacs.git", :revision => ENV['HOMEBREW_EMACS_PLUS_30_REVISION']
-  else
-    url "https://github.com/emacs-mirror/emacs.git", :branch => "emacs-30"
   end
 
   #
@@ -96,7 +106,6 @@ class EmacsPlusAT30 < EmacsBase
   opoo "The option --with-no-frame-refocus is not required anymore in emacs-plus@30." if build.with? "no-frame-refocus"
   local_patch "fix-window-role", sha: "1f8423ea7e6e66c9ac6dd8e37b119972daa1264de00172a24a79a710efcb8130"
   local_patch "system-appearance", sha: "9eb3ce80640025bff96ebaeb5893430116368d6349f4eb0cb4ef8b3d58477db6"
-  local_patch "poll", sha: "59e876f82e6fd8e4583bc2456339eda4f989c86b1e16a02b0726702e95f60825" if build.with? "poll"
   local_patch "round-undecorated-frame", sha: "7451f80f559840e54e6a052e55d1100778abc55f98f1d0c038a24e25773f2874"
   local_patch "alpha-background", sha: "922d9c5cd7deebd16773d354150faa8a5e69d998651cb2e956d9ed600232b4bc" 
 
@@ -121,6 +130,9 @@ class EmacsPlusAT30 < EmacsBase
 
     ENV.append "CFLAGS", "-g -Og" if build.with? "debug"
     ENV.append "CFLAGS", "-O2 -DFD_SETSIZE=10000 -DDARWIN_UNLIMITED_SELECT"
+
+    ENV.append "CFLAGS", "-I#{Formula["sqlite"].include}"
+    ENV.append "LDFLAGS", "-L#{Formula["sqlite"].opt_lib}"
 
     # Necessary for libgccjit library discovery
     if build.with? "native-comp"
@@ -173,7 +185,7 @@ class EmacsPlusAT30 < EmacsBase
       system "./configure", *args
 
       # Disable aligned_alloc on Mojave. See issue: https://github.com/daviderestivo/homebrew-emacs-head/issues/15
-      if MacOS.version <= :mojave
+      if OS.mac? && MacOS.version <= :mojave
         ohai "Force disabling of aligned_alloc on macOS <= Mojave"
         configure_h_filtered = File.read("src/config.h")
                                    .gsub("#define HAVE_ALIGNED_ALLOC 1", "#undef HAVE_ALIGNED_ALLOC")
@@ -231,7 +243,7 @@ class EmacsPlusAT30 < EmacsBase
       system "./configure", *args
 
       # Disable aligned_alloc on Mojave. See issue: https://github.com/daviderestivo/homebrew-emacs-head/issues/15
-      if MacOS.version <= :mojave
+      if OS.mac? && MacOS.version <= :mojave
         ohai "Force disabling of aligned_alloc on macOS <= Mojave"
         configure_h_filtered = File.read("src/config.h")
                                    .gsub("#define HAVE_ALIGNED_ALLOC 1", "#undef HAVE_ALIGNED_ALLOC")
@@ -257,7 +269,6 @@ class EmacsPlusAT30 < EmacsBase
         (man1/"ctags.1").unlink
       end
     end
-    args << "--with-poll" if build.with? "poll"
   end
 
   def post_install
@@ -273,7 +284,7 @@ class EmacsPlusAT30 < EmacsBase
         #{prefix}
 
       To link the application to default Homebrew App location:
-        osascript -e 'tell application "Finder" to make alias file to posix file "#{prefix}/Emacs.app" at POSIX file "/Applications" with properties {name:"Emacs.app"}'
+        osascript -e 'tell application "Finder" to make alias file to posix file "#{prefix}/Emacs.app" at posix file "/Applications" with properties {name:"Emacs.app"}'
 
       Your PATH value was injected into Emacs.app/Contents/Info.plist
 
