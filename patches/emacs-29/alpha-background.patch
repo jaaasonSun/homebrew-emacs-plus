@@ -196,18 +196,16 @@ index 518b38658d1..9ab3ff8f783 100644
                     left_p, right_p);
      }
    else
-@@ -3757,8 +3760,10 @@ Function modeled after x_draw_glyph_string_box ().
-             {
-               if (s->hl != DRAW_CURSOR)
-                 [(NS_FACE_BACKGROUND (face) != 0
--                  ? [NSColor colorWithUnsignedLong:NS_FACE_BACKGROUND (face)]
-+		  ? [[NSColor colorWithUnsignedLong:NS_FACE_BACKGROUND (face)]
-+		      colorWithAlphaComponent: s->f->alpha_background]
-                   : FRAME_BACKGROUND_COLOR (s->f)) set];
-+
-               else if (face && (NS_FACE_BACKGROUND (face)
-                                 == [(NSColor *) FRAME_CURSOR_COLOR (s->f)
-                                                 unsignedLong]))
+@@ -3757,7 +3760,8 @@ Function modeled after x_draw_glyph_string_box ().
+ 	{
+ 	  if (s->hl != DRAW_CURSOR)
+ 	    [(NS_FACE_BACKGROUND (face) != 0
+-	      ? [NSColor colorWithUnsignedLong:NS_FACE_BACKGROUND (face)]
++	      ? [[NSColor colorWithUnsignedLong:NS_FACE_BACKGROUND (face)]
++                  colorWithAlphaComponent: s->f->alpha_background]
+ 	      : FRAME_BACKGROUND_COLOR (s->f)) set];
+ 	  else if (face && (NS_FACE_BACKGROUND (face)
+ 			    == [(NSColor *) FRAME_CURSOR_COLOR (s->f)
 @@ -3902,7 +3907,8 @@ Function modeled after x_draw_glyph_string_box ().
       otherwise, since we composite the image under NS (instead of mucking
       with its background color), we must clear just the image area.  */
