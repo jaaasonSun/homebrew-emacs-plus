@@ -57,4 +57,5 @@ ICONS_CONFIG = {
   "spacemacs" => "ff2bdfe9d7bec826fb8f3bb9c2b2237ba838a8cb5afc6a15be1db4ace89d8d4b",
   "savchenkovaleriy-big-sur-3d" => "10d05320cc13dfdb4ff0c78e25d92d4fcb475d931ae762d49e7f0894be6c309f",
   "savchenkovaleriy-big-sur-curvy-3d" => "d69852471cc711b2bcbe3ecc77262360e2a985bdc91f459eb38639c8838befee",
+  "unknown-big-sur-circle" => "3603f59c8146fbe2fb02ec8d53174b8e9b01175384addbea979032422a0ec6fc",
 }.freeze
